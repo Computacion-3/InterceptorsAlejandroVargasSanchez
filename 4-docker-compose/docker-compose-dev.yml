@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db-dev
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-appdb_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_dev_pass}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - app-network-dev
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: app-backend-dev
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-appdb_dev}
+      DB_USER: ${POSTGRES_USER:-postgres_dev}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres_dev_pass}
+    depends_on:
+      - postgres
+    networks:
+      - app-network-dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: app-frontend-dev
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    env_file:
+      - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    depends_on:
+      - backend
+    networks:
+      - app-network-dev
+
+volumes:
+  postgres_data_dev:
+
+networks:
+  app-network-dev:
+    driver: bridge
