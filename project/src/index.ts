@@ -1,18 +1,26 @@
-interface User {
-  id: number;
-  name: string;
-  role: string;
-}
+import { OrderProcessor } from "./features/orders/order.processor";
+import { CreditCardPayment } from "./features/payments/credit-card.payment";
+import { PaypalPayment } from "./features/payments/paypal.payment";
+import { EmailNotifier } from "./features/notifications/email.notifier";
 
-const mainUser: User = {
-  id: 1,
-  name: "Kevin David",
-  role: "Teacher"
-};
+// 1. Instanciamos las dependencias
+const emailNotifier = new EmailNotifier();
+const creditCardPayment = new CreditCardPayment();
+const paypalPayment = new PaypalPayment();
 
-function printUserInfo(user: User): void {
-  console.log(`[User Log]: ${user.name} (${user.role}) - ID: ${user.id}`);
-}
+// 2. Inyección de Dependencias (DIP)
+const orderProcessorCard = new OrderProcessor(creditCardPayment, emailNotifier);
+const orderProcessorPaypal = new OrderProcessor(paypalPayment, emailNotifier);
 
-printUserInfo(mainUser);
-printUserInfo(mainUser);
+// 3. Procesamos los pedidos
+orderProcessorCard.process({
+    id: 101,
+    amount: 150000,
+    userEmail: "juan@gmail.com"
+});
+
+orderProcessorPaypal.process({
+    id: 102,
+    amount: 80000,
+    userEmail: "maria@gmail.com"
+});
