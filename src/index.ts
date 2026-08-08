@@ -3,14 +3,25 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { db } from './config/connectionDB';
 import { usersRoutes, routinesRoutes } from './features';
+import { 
+    requestLoggerMiddleware, 
+    responseLoggerMiddleware, 
+    encryptResponseMiddleware,
+    notFoundMiddleware,
+    errorHandlerMiddleware
+} from './middlewares';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+app.use(requestLoggerMiddleware);
+app.use(responseLoggerMiddleware);
+app.use(encryptResponseMiddleware);
 
 app.use('/api/users', usersRoutes);
 app.use('/api/routines', routinesRoutes);
@@ -18,6 +29,9 @@ app.use('/api/routines', routinesRoutes);
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'API funcionando correctamente' });
 });
+
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 db.then(() => {
     app.listen(PORT, () => {

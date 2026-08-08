@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { UsersService } from "./users.service";
 
 export class UsersController {
@@ -27,12 +27,12 @@ export class UsersController {
         }
     };
 
-    create = async (req: Request, res: Response): Promise<void> => {
+    create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const newUser = await this.usersService.create(req.body);
             res.status(201).json(newUser);
         } catch (error: any) {
-            res.status(400).json({ message: error.message });
+            next(error);
         }
     };
 }
