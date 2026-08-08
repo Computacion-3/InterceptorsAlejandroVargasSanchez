@@ -2,8 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { db } from './config/connectionDB';
-import usersRoutes from './features/users/users.routes';
-import routinesRoutes from './features/routines/routines.routes';
+import { usersRoutes, routinesRoutes } from './features';
 
 dotenv.config();
 
