@@ -112,3 +112,7 @@ erDiagram
 
     ROUTINE_EXERCISE ||--o{ ACTIVITY_EXERCISE : executed_as
 ```
+
+# Connection String mongodb
+
+mongodb://admin:password@localhost:27017/fitness-db?authSource=admin
