@@ -22,7 +22,8 @@ import { AuthModule } from './auth/auth.module';
                     entities: [__dirname + '/**/*.entity{.ts,.js}'],
                     synchronize: configService.get<boolean>('DB_SYNCHRONIZE') ?? true,
                 }) as TypeOrmModuleOptions,
-        }), AuthModule,
+        }),
+        AuthModule,
     ],
 
     controllers: [AppController],
