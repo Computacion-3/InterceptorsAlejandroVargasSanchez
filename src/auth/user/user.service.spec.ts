@@ -47,7 +47,6 @@ describe('UserService', () => {
             id: 1,
             name: 'admin',
             description: 'Administrator',
-            createdAt: new Date(),
             users: [],
             rolePermissions: [],
         };
@@ -77,7 +76,6 @@ describe('UserService', () => {
             id: 1,
             name: 'admin',
             description: 'Administrator',
-            createdAt: new Date(),
             users: [],
             rolePermissions: [],
         };
