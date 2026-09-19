@@ -9,6 +9,7 @@ import {
     HttpCode,
     HttpStatus,
     InternalServerErrorException,
+    UseGuards,
 } from '@nestjs/common';
 
 import { PositiveIntPipe } from '../../common/pipes/positive-int-pipe';
@@ -16,6 +17,7 @@ import { PositiveIntPipe } from '../../common/pipes/positive-int-pipe';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
@@ -29,6 +31,7 @@ export class UserController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthGuard('jwt'))
     findAll() {
         return this.userService.findAll();
     }

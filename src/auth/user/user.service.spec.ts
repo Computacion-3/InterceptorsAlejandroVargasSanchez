@@ -102,7 +102,7 @@ describe('UserService', () => {
         expect(await service.findOne(1)).toEqual(mockUser);
         expect(mockRepository.findOne).toHaveBeenCalledWith({
             where: { id: 1 },
-            relations: { role: true },
+            relations: { role: false },
         });
     });
 
@@ -112,7 +112,7 @@ describe('UserService', () => {
         await expect(service.findOne(999)).rejects.toThrow(UserNotFoundException);
         expect(mockRepository.findOne).toHaveBeenCalledWith({
             where: { id: 999 },
-            relations: { role: true },
+            relations: { role: false },
         });
     });
 
@@ -196,7 +196,7 @@ describe('UserService', () => {
 
         expect(mockRepository.findOne).toHaveBeenCalledWith({
             where: { id: 1 },
-            relations: { role: true },
+            relations: { role: false },
         });
         expect(mockRepository.merge).toHaveBeenCalledWith(existingUser, { username: 'updatedUser' });
         expect(mockRepository.save).toHaveBeenCalledWith(existingUser);
@@ -270,7 +270,7 @@ describe('UserService', () => {
 
         expect(mockRepository.findOne).toHaveBeenCalledWith({
             where: { id: 1 },
-            relations: { role: true },
+            relations: { role: false },
         });
         expect(mockRepository.remove).toHaveBeenCalledWith(existingUser);
         expect(result).toEqual({ message: 'User with id #1 deleted successfully' });
