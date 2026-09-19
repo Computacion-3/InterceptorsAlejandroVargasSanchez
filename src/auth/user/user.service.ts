@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { RoleNotFoundException, UserNotFoundException } from '../../common/exceptions';
 import { User } from '../entities/user.entity';
@@ -15,6 +17,7 @@ export class UserService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly roleService: RoleService,
+        private readonly configService: ConfigService,
     ) {}
 
     async create(createUserDto: CreateUserDto): Promise<User> {
@@ -24,11 +27,20 @@ export class UserService {
             throw new RoleNotFoundException(roleId);
         }
 
+        const saltRounds = parseInt(this.configService.get<string>('SALT_ROUNDS') ?? '10', 10);
+
+        const passwordHashed = await bcrypt.hash(userData.passwordHash, saltRounds);
+
         const user = this.userRepository.create({
             ...userData,
+            passwordHash: passwordHashed,
             role,
         });
-        return await this.userRepository.save(user);
+
+        const savedUser = await this.userRepository.save(user);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { passwordHash: _, ...userWithoutPassword } = savedUser;
+        return userWithoutPassword as User;
     }
 
     async findAll(): Promise<User[]> {

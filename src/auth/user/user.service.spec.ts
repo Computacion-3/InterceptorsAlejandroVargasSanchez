@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcrypt';
 
 import { RoleNotFoundException, UserNotFoundException } from '../../common/exceptions';
 import { Role } from '../entities/role.entity';
@@ -7,6 +9,10 @@ import { User } from '../entities/user.entity';
 import { RoleService } from '../role/role.service';
 
 import { UserService } from './user.service';
+
+jest.mock('bcrypt', () => ({
+    hash: jest.fn(),
+}));
 
 describe('UserService', () => {
     let service: UserService;
@@ -32,6 +38,7 @@ describe('UserService', () => {
                 UserService,
                 { provide: getRepositoryToken(User), useValue: mockRepository },
                 { provide: RoleService, useValue: mockRoleService },
+                { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('10') } },
             ],
         }).compile();
 
@@ -128,20 +135,20 @@ describe('UserService', () => {
             email: 'user1@gmail.com',
             bio: '',
             role: mockRole,
-            passwordHash: 'password123',
             createdAt: new Date(),
         };
 
         mockRoleService.findOne.mockResolvedValue(mockRole);
         mockRepository.create.mockReturnValue(mockSavedUser);
         mockRepository.save.mockResolvedValue(mockSavedUser);
+        (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
 
         expect(await service.create(createUserDto)).toEqual(mockSavedUser);
         expect(mockRoleService.findOne).toHaveBeenCalledWith(1);
         expect(mockRepository.create).toHaveBeenCalledWith({
             username: 'user1',
             email: 'user1@gmail.com',
-            passwordHash: 'password123',
+            passwordHash: 'hashedPassword',
             role: mockRole,
         });
         expect(mockRepository.save).toHaveBeenCalledWith(mockSavedUser);
