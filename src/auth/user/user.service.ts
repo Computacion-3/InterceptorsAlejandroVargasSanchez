@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 import { RoleNotFoundException, UserNotFoundException } from '../../common/exceptions';
 import { User } from '../entities/user.entity';
@@ -15,6 +17,7 @@ export class UserService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly roleService: RoleService,
+        private readonly configService: ConfigService,
     ) {}
 
     async create(createUserDto: CreateUserDto): Promise<User> {
@@ -24,8 +27,15 @@ export class UserService {
             throw new RoleNotFoundException(roleId);
         }
 
+        // pass123 - $20A$561201asad
+        const passwordHashed = await bcrypt.hash(
+            createUserDto.passwordHash,
+            this.configService.get<number>('SALT_QTY') ?? 1,
+        );
+
         const user = this.userRepository.create({
             ...userData,
+            passwordHash: passwordHashed,
             role,
         });
         return await this.userRepository.save(user);
@@ -37,13 +47,22 @@ export class UserService {
         });
     }
 
-    async findOne(id: number): Promise<User> {
+    async findOne(identifier: string | number, relations: boolean = false): Promise<User> {
+        const where = typeof identifier === 'number' ? { id: identifier } : { email: identifier };
         const user = await this.userRepository.findOne({
-            where: { id },
-            relations: { role: true },
+            where,
+            relations: relations
+                ? {
+                      role: {
+                          rolePermissions: {
+                              permission: true,
+                          },
+                      },
+                  }
+                : undefined,
         });
         if (!user) {
-            throw new UserNotFoundException(id);
+            throw new UserNotFoundException(identifier);
         }
         return user;
     }
