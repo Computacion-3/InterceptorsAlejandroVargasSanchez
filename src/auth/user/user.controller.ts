@@ -10,17 +10,21 @@ import {
     HttpStatus,
     InternalServerErrorException,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+
+import { CryptoInterceptor } from 'src/common/logger/crypto.interceptor';
 
 import { PositiveIntPipe } from '../../common/pipes/positive-int-pipe';
 import { PermissionsGuard } from '../guards/permissions/permissions.guard';
 import { Permissions } from '../decorators/permissions.decorator';
 
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
+@UseInterceptors(CryptoInterceptor)
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}
@@ -66,5 +70,10 @@ export class UserController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param('id', PositiveIntPipe) id: number) {
         await this.userService.remove(id);
+    }
+
+    @Post('sensitive-operation')
+    createSensitive(@Body() data: unknown) {
+        return { success: true, received: data };
     }
 }
